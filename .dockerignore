@@ -1,0 +1,29 @@
+# Git and local tooling
+.git
+.gitignore
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+
+# Local configuration and databases
+.env
+.env.*
+!.env.example
+pricepulse.db
+pricepulse.db-*
+*.sqlite3
+
+# Tests and docs are not needed at runtime
+tests
+docs
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -29,9 +29,6 @@ services:
       SCHEDULER_ENABLED: "true"
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
-    volumes:
-      # Persist the demo SQLite file only when DATABASE_URL is switched back to SQLite.
-      - ./pricepulse.db:/app/pricepulse.db
 
 volumes:
   pgdata:
