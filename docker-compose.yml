@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pricepulse
+      POSTGRES_PASSWORD: pricepulse
+      POSTGRES_DB: pricepulse
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pricepulse -d pricepulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://pricepulse:pricepulse@db:5432/pricepulse
+      AUTO_CREATE_TABLES: "false"
+      PUBLIC_BASE_URL: http://localhost:8000
+      SCHEDULER_ENABLED: "true"
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    volumes:
+      # Persist the demo SQLite file only when DATABASE_URL is switched back to SQLite.
+      - ./pricepulse.db:/app/pricepulse.db
+
+volumes:
+  pgdata:

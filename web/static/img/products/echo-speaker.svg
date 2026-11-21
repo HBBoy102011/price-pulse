@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <defs>
+    <linearGradient id="es-a" x1="58" y1="52" x2="182" y2="196" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset="1" stop-color="#1E1B4B"/>
+    </linearGradient>
+    <pattern id="es-mesh" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#0B0D14" opacity=".45"/>
+    </pattern>
+  </defs>
+  <ellipse cx="120" cy="212" rx="58" ry="8" fill="#000" opacity=".35"/>
+  <rect x="66" y="52" width="108" height="152" rx="54" fill="url(#es-a)"/>
+  <rect x="78" y="66" width="84" height="124" rx="42" fill="url(#es-mesh)"/>
+  <ellipse cx="120" cy="60" rx="54" ry="14" fill="#C4B5FD"/>
+  <ellipse cx="120" cy="60" rx="40" ry="9" fill="#0B0D14" opacity=".35"/>
+  <path d="M96 118h12l5-12 8 24 5-12h18" stroke="#C9FF4D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="120" cy="156" r="13" stroke="#C9FF4D" stroke-width="2.5" opacity=".8"/>
+  <circle cx="120" cy="156" r="4" fill="#C9FF4D"/>
+  <path d="M90 188h60" stroke="#fff" stroke-opacity=".2" stroke-width="3" stroke-linecap="round"/>
+</svg>

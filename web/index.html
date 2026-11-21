@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="PricePulse — трекер цен с парсерами магазинов, историей цен, графиками и Telegram-уведомлениями.">
+<meta name="theme-color" content="#06070b">
+<title>PricePulse — цены под контролем</title>
+<link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/fonts/fonts.css">
+<link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<svg class="svg-sprite" aria-hidden="true">
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-5 4 3 5-7"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-trend-down" viewBox="0 0 24 24"><path d="m3 7 7 7 4-4 7 7"/><path d="M21 12v5h-5"/></symbol>
+  <symbol id="i-trend-up" viewBox="0 0 24 24"><path d="m3 17 7-7 4 4 7-7"/><path d="M21 7v5h-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+  <symbol id="i-telegram" viewBox="0 0 24 24"><path d="m21 3-3 18-6-5-3 3-1-6 9-7-11 5-3-1z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+</svg>
+
+<div class="ambient" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="grid-lines"></div>
+</div>
+
+<header class="topbar">
+  <div class="shell topbar-inner">
+    <a class="brand" href="/" aria-label="PricePulse — на главную">
+      <span class="brand-mark">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 17h6l3-8 5 15 3-7h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-name">Price<span>Pulse</span></span>
+    </a>
+
+    <nav class="main-nav" aria-label="Основная навигация">
+      <a href="#products" class="is-active">Товары</a>
+      <a href="/demo/shop" target="_blank" rel="noopener">Demo Store <svg class="icon icon-xs"><use href="#i-external"/></svg></a>
+      <a href="/docs" target="_blank" rel="noopener">API</a>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="Переключить тему" title="Переключить тему">
+        <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+        <svg class="icon icon-moon"><use href="#i-moon"/></svg>
+      </button>
+      <button class="icon-btn bell-btn" id="notificationsBtn" type="button" aria-label="Уведомления" title="Уведомления">
+        <svg class="icon"><use href="#i-bell"/></svg>
+        <span class="bell-dot" id="bellDot" hidden></span>
+      </button>
+      <button class="btn btn-primary" id="addBtn" type="button">
+        <svg class="icon"><use href="#i-plus"/></svg><span>Отслеживать</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">
+        <span class="pulse-dot"></span>
+        <span id="schedulerLabel">планировщик активен</span>
+        <span class="eyebrow-sep">/</span>
+        <span id="nextCheckLabel">каждые 6 ч</span>
+      </div>
+      <h1>Цены под<br><span class="grad-text">контролем.</span></h1>
+      <p class="hero-lead">
+        Следим за товарами в любимых магазинах, храним каждое изменение цены
+        и присылаем в Telegram, когда становится дешевле.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" id="heroAddBtn" type="button">
+          <svg class="icon"><use href="#i-plus"/></svg> Добавить товар
+        </button>
+        <button class="btn btn-ghost btn-lg" id="checkAllBtn" type="button">
+          <svg class="icon"><use href="#i-refresh"/></svg> Проверить все
+        </button>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <strong id="heroSavings">—</strong>
+          <span>ниже исторического пика</span>
+        </div>
+        <div class="hero-meta-item">
+          <strong id="heroBelow">—</strong>
+          <span>товаров у цели</span>
+        </div>
+        <div class="hero-meta-item">
+          <strong id="heroChecks">—</strong>
+          <span>проверок сегодня</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="monitor-card" id="heroMonitor">
+        <div class="monitor-head">
+          <div class="monitor-product">
+            <span class="monitor-thumb" id="heroThumb"></span>
+            <div>
+              <span class="monitor-shop" id="heroShop">Demo Store</span>
+              <strong id="heroTitle">Aurora Studio ANC</strong>
+            </div>
+          </div>
+          <span class="chip chip-lime" id="heroDelta">−12,4%</span>
+        </div>
+        <div class="monitor-price">
+          <span id="heroPrice">21 990 ₽</span>
+          <span class="monitor-old" id="heroOld">24 990 ₽</span>
+        </div>
+        <div class="monitor-chart" id="heroSparkWrap">
+          <svg viewBox="0 0 420 120" preserveAspectRatio="none" class="spark-big">
+            <defs>
+              <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#c9ff4d" stop-opacity=".32"/>
+                <stop offset="100%" stop-color="#c9ff4d" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path id="heroFillPath" fill="url(#heroFill)" d=""></path>
+            <path id="heroLinePath" fill="none" stroke="#c9ff4d" stroke-width="2.5" stroke-linecap="round" d=""></path>
+          </svg>
+          <div class="monitor-grid"></div>
+        </div>
+        <div class="monitor-foot">
+          <span><span class="live-dot"></span> обновлено только что</span>
+          <span id="heroTarget">цель 21 990 ₽</span>
+        </div>
+      </div>
+
+      <div class="float-note float-telegram">
+        <span class="float-icon float-icon-tg"><svg class="icon"><use href="#i-telegram"/></svg></span>
+        <div><strong>Telegram</strong><span>Цена достигла цели 🎯</span></div>
+      </div>
+      <div class="float-note float-stat">
+        <span class="float-icon float-icon-lime"><svg class="icon"><use href="#i-trend-down"/></svg></span>
+        <div><strong id="floatSaved">−4 200 ₽</strong><span>к пику за 30 дней</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats-grid" aria-label="Сводка">
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon stat-icon-violet"><svg class="icon"><use href="#i-box"/></svg></span>
+        <span class="stat-tag" id="statActiveTag">0 активных</span>
+      </div>
+      <span class="stat-label">Под наблюдением</span>
+      <strong class="stat-value" id="statTotal" data-count="0">0</strong>
+      <span class="stat-sub">товаров в трекере</span>
+    </article>
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon stat-icon-lime"><svg class="icon"><use href="#i-target"/></svg></span>
+        <span class="stat-tag stat-tag-lime" id="statTargetTag">0 с целью</span>
+      </div>
+      <span class="stat-label">Достигли цели</span>
+      <strong class="stat-value" id="statBelow" data-count="0">0</strong>
+      <span class="stat-sub">можно покупать сейчас</span>
+    </article>
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon stat-icon-cyan"><svg class="icon"><use href="#i-trend-down"/></svg></span>
+        <span class="stat-tag" id="statDiscountTag">от пика</span>
+      </div>
+      <span class="stat-label">Средняя скидка</span>
+      <strong class="stat-value" id="statDiscount" data-count="0" data-suffix="%">0%</strong>
+      <span class="stat-sub">от максимума за 30 дней</span>
+    </article>
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon stat-icon-amber"><svg class="icon"><use href="#i-refresh"/></svg></span>
+        <span class="stat-tag" id="statSchedulerTag">планировщик</span>
+      </div>
+      <span class="stat-label">Проверок сегодня</span>
+      <strong class="stat-value" id="statChecks" data-count="0">0</strong>
+      <span class="stat-sub" id="statNext">следующая — по расписанию</span>
+    </article>
+  </section>
+
+  <section class="products-section" id="products">
+    <div class="section-head">
+      <div>
+        <h2>Ваши товары <span class="count-badge" id="productsCount">0</span></h2>
+        <p id="productsSub">Загружаем витрину…</p>
+      </div>
+      <div class="section-tools">
+        <label class="search-field">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input type="search" id="searchInput" placeholder="Поиск по названию" autocomplete="off">
+        </label>
+        <label class="select-field">
+          <select id="sortSelect" aria-label="Сортировка">
+            <option value="recent">Недавно проверенные</option>
+            <option value="discount">Большая скидка</option>
+            <option value="price_asc">Цена: по возрастанию</option>
+            <option value="price_desc">Цена: по убыванию</option>
+            <option value="title">По названию</option>
+          </select>
+          <svg class="icon icon-xs"><use href="#i-chevron"/></svg>
+        </label>
+      </div>
+    </div>
+
+    <div class="filter-row" id="filterRow" role="tablist" aria-label="Фильтр по статусу">
+      <button class="filter-chip is-active" data-filter="all" type="button" role="tab">Все <span data-filter-count="all">0</span></button>
+      <button class="filter-chip" data-filter="active" type="button" role="tab">Активные <span data-filter-count="active">0</span></button>
+      <button class="filter-chip" data-filter="below" type="button" role="tab">У цели <span data-filter-count="below">0</span></button>
+      <button class="filter-chip" data-filter="paused" type="button" role="tab">На паузе <span data-filter-count="paused">0</span></button>
+      <button class="filter-chip" data-filter="error" type="button" role="tab">Ошибки <span data-filter-count="error">0</span></button>
+      <span class="filter-spacer"></span>
+      <button class="filter-chip filter-chip-demo" id="openDemoShop" type="button">
+        <span class="pulse-dot"></span> Открыть Demo Store
+      </button>
+    </div>
+
+    <div class="product-grid" id="productGrid" aria-live="polite"></div>
+
+    <div class="skeleton-grid" id="skeletonGrid" aria-hidden="true">
+      <div class="skeleton-card"><div class="sk-img"></div><div class="sk-line w70"></div><div class="sk-line w40"></div><div class="sk-line w90"></div></div>
+      <div class="skeleton-card"><div class="sk-img"></div><div class="sk-line w60"></div><div class="sk-line w35"></div><div class="sk-line w80"></div></div>
+      <div class="skeleton-card"><div class="sk-img"></div><div class="sk-line w75"></div><div class="sk-line w45"></div><div class="sk-line w85"></div></div>
+    </div>
+
+    <div class="empty-state" id="emptyState" hidden>
+      <div class="empty-art">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="44" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="1.5" stroke-dasharray="4 7"/>
+          <circle cx="60" cy="60" r="28" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-width="1.5"/>
+          <path d="M38 64h12l6-16 8 28 6-12h14" fill="none" stroke="#c9ff4d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 id="emptyTitle">Пока пусто</h3>
+      <p id="emptyText">Добавьте ссылку на товар из Demo Store, Wildberries или Ozon — и мы начнём следить за ценой.</p>
+      <div class="empty-actions">
+        <button class="btn btn-primary" id="emptyAddBtn" type="button"><svg class="icon"><use href="#i-plus"/></svg> Добавить товар</button>
+        <a class="btn btn-ghost" href="/demo/shop" target="_blank" rel="noopener">Посмотреть Demo Store</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="insight-banner">
+    <div class="insight-glow"></div>
+    <div class="insight-copy">
+      <span class="eyebrow eyebrow-tight"><svg class="icon icon-xs"><use href="#i-telegram"/></svg> Telegram-алерты</span>
+      <h2>Скидка случилась.<br>Вы узнали первым.</h2>
+      <p>Порог цены, скидка к медиане за 30 дней и падение больше 8% — каждое событие попадает в ленту и в Telegram.</p>
+      <div class="insight-actions">
+        <button class="btn btn-primary" id="insightAddBtn" type="button">Настроить порог</button>
+        <button class="btn btn-ghost" id="insightFeedBtn" type="button">Открыть ленту</button>
+      </div>
+    </div>
+    <div class="chat-mock" aria-hidden="true">
+      <div class="chat-head">
+        <span class="chat-avatar">P</span>
+        <div><strong>PricePulse Bot</strong><span>bot · только что</span></div>
+        <span class="chat-online"></span>
+      </div>
+      <div class="chat-bubble">
+        <span class="chat-kicker">🎯 Цена достигла цели</span>
+        <strong>Aurora Studio ANC</strong>
+        <span>Сейчас: <b>21 990 ₽</b> · цель 22 000 ₽</span>
+        <span class="chat-link">wildberries.ru →</span>
+      </div>
+      <div class="chat-bubble chat-bubble-soft">
+        <span>📉 Ещё один товар подешевел на 11%</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-grid">
+    <article class="how-card">
+      <span class="how-num">01</span>
+      <h3>Вставьте ссылку</h3>
+      <p>Парсер сам определит магазин, вытащит название, цену и картинку. Без ручного заполнения.</p>
+    </article>
+    <article class="how-card">
+      <span class="how-num">02</span>
+      <h3>Задайте цель</h3>
+      <p>Порог цены или скидка к медиане за 30 дней. Планировщик проверяет товары каждые 6 часов.</p>
+    </article>
+    <article class="how-card">
+      <span class="how-num">03</span>
+      <h3>Получите алерт</h3>
+      <p>История и график сохраняются, а в Telegram приходит сообщение со ссылкой на товар.</p>
+    </article>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="shell footer-inner">
+    <div class="footer-brand">
+      <span class="brand-mark brand-mark-sm">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 17h6l3-8 5 15 3-7h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div><strong>PricePulse</strong><span>Учебный проект · Python / FastAPI / SQLAlchemy</span></div>
+    </div>
+    <div class="footer-links">
+      <a href="/docs" target="_blank" rel="noopener">API</a>
+      <a href="/demo/shop" target="_blank" rel="noopener">Demo Store</a>
+      <a href="/api/health" target="_blank" rel="noopener">Health</a>
+      <a href="https://github.com/HBBoy102011/price-pulse" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p class="footer-note">Парсим бережно: robots.txt, паузы и лимиты. Только для личного использования.</p>
+  </div>
+</footer>
+
+<!-- Chart modal -->
+<div class="modal" id="chartModal" hidden>
+  <div class="modal-backdrop" data-close="chartModal"></div>
+  <div class="modal-panel modal-panel-wide" role="dialog" aria-modal="true" aria-labelledby="chartTitle">
+    <button class="modal-close" data-close="chartModal" type="button" aria-label="Закрыть"><svg class="icon"><use href="#i-x"/></svg></button>
+    <div class="chart-modal-head">
+      <div class="chart-product">
+        <span class="chart-thumb" id="chartThumb"></span>
+        <div>
+          <span class="chart-shop" id="chartShop">Demo Store</span>
+          <h2 id="chartTitle">Товар</h2>
+          <span class="chart-meta" id="chartMeta">—</span>
+        </div>
+      </div>
+      <div class="chart-price-block">
+        <span class="chart-price" id="chartPrice">—</span>
+        <span class="chip" id="chartDelta">—</span>
+      </div>
+    </div>
+
+    <div class="chart-toolbar">
+      <div class="range-tabs" id="rangeTabs" role="tablist" aria-label="Период">
+        <button class="range-tab" data-days="7" type="button">7 дней</button>
+        <button class="range-tab is-active" data-days="30" type="button">30 дней</button>
+        <button class="range-tab" data-days="90" type="button">90 дней</button>
+        <button class="range-tab" data-days="365" type="button">Год</button>
+      </div>
+      <a class="btn btn-ghost btn-sm" id="chartExport" href="#" download>
+        <svg class="icon icon-xs"><use href="#i-download"/></svg> CSV
+      </a>
+    </div>
+
+    <div class="chart-canvas-wrap">
+      <canvas id="priceChart" aria-label="График изменения цены" role="img"></canvas>
+    </div>
+
+    <div class="chart-stats">
+      <div><span>Минимум</span><strong id="chartMin">—</strong></div>
+      <div><span>Максимум</span><strong id="chartMax">—</strong></div>
+      <div><span>Средняя</span><strong id="chartAvg">—</strong></div>
+      <div><span>Медиана 30 дней</span><strong id="chartMedian">—</strong></div>
+      <div><span>Изменений</span><strong id="chartChanges">—</strong></div>
+    </div>
+
+    <div class="chart-footer">
+      <div class="target-editor">
+        <label for="chartTargetInput">Цель, ₽</label>
+        <input id="chartTargetInput" type="number" min="0" step="10" inputmode="numeric" placeholder="не задана">
+        <button class="btn btn-primary btn-sm" id="chartTargetSave" type="button">Сохранить</button>
+      </div>
+      <div class="chart-footer-actions">
+        <button class="btn btn-ghost btn-sm" id="chartCheckBtn" type="button"><svg class="icon icon-xs"><use href="#i-refresh"/></svg> Проверить</button>
+        <a class="btn btn-ghost btn-sm" id="chartOpenLink" href="#" target="_blank" rel="noopener">Открыть магазин <svg class="icon icon-xs"><use href="#i-external"/></svg></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add / edit modal -->
+<div class="modal" id="formModal" hidden>
+  <div class="modal-backdrop" data-close="formModal"></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+    <button class="modal-close" data-close="formModal" type="button" aria-label="Закрыть"><svg class="icon"><use href="#i-x"/></svg></button>
+    <div class="modal-kicker" id="formKicker">Новый товар</div>
+    <h2 id="formTitle">Добавить в трекер</h2>
+    <p class="modal-lead" id="formLead">Вставьте ссылку — остальное сделаем сами.</p>
+
+    <form id="productForm" novalidate>
+      <div class="field" id="urlField">
+        <label for="productUrl">Ссылка на товар</label>
+        <div class="input-wrap">
+          <svg class="icon input-icon"><use href="#i-external"/></svg>
+          <input id="productUrl" name="url" type="url" placeholder="https://www.wildberries.ru/catalog/…" autocomplete="off" required>
+          <button class="input-action" id="previewBtn" type="button">Проверить</button>
+        </div>
+        <div class="field-hint">
+          <span>Demo Store, Wildberries или Ozon</span>
+          <button class="link-btn" id="fillDemoBtn" type="button">Подставить пример</button>
+        </div>
+      </div>
+
+      <div class="preview-card" id="previewCard" hidden>
+        <div class="preview-img"><img id="previewImg" alt=""></div>
+        <div class="preview-body">
+          <span class="preview-shop" id="previewShop">—</span>
+          <strong id="previewTitle">—</strong>
+          <div class="preview-price-row"><span id="previewPrice">—</span><span class="preview-stock" id="previewStock"></span></div>
+        </div>
+        <span class="preview-ok"><svg class="icon icon-xs"><use href="#i-check"/></svg></span>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="targetPrice">Целевая цена, ₽</label>
+          <input id="targetPrice" name="target_price" type="number" min="0" step="10" inputmode="numeric" placeholder="например, 21 990">
+          <div class="quick-prices" id="quickPrices">
+            <button type="button" data-discount="5">−5%</button>
+            <button type="button" data-discount="10">−10%</button>
+            <button type="button" data-discount="15">−15%</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="targetDiscount">Скидка к медиане, %</label>
+          <input id="targetDiscount" name="target_discount_percent" type="number" min="1" max="90" step="1" inputmode="numeric" placeholder="например, 15">
+          <div class="field-hint"><span>Алерт, если цена ниже медианы за 30 дней</span></div>
+        </div>
+      </div>
+
+      <div class="form-error" id="formError" hidden></div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" data-close="formModal">Отмена</button>
+        <button class="btn btn-primary" id="submitProduct" type="submit">
+          <span class="btn-label">Добавить товар</span>
+          <span class="btn-spinner" hidden></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal" id="confirmModal" hidden>
+  <div class="modal-backdrop" data-close="confirmModal"></div>
+  <div class="modal-panel modal-panel-sm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="confirm-icon"><svg class="icon"><use href="#i-trash"/></svg></div>
+    <h2 id="confirmTitle">Удалить товар?</h2>
+    <p class="modal-lead" id="confirmText">История цен и уведомления тоже удалятся. Это действие нельзя отменить.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" type="button" data-close="confirmModal">Отмена</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn" type="button">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications drawer -->
+<div class="drawer" id="notificationsDrawer" hidden>
+  <div class="drawer-backdrop" data-close="notificationsDrawer"></div>
+  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-head">
+      <div>
+        <span class="modal-kicker">Лента событий</span>
+        <h2 id="drawerTitle">Уведомления</h2>
+      </div>
+      <button class="modal-close" data-close="notificationsDrawer" type="button" aria-label="Закрыть"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="tg-status" id="tgStatus">
+      <span class="tg-status-icon"><svg class="icon"><use href="#i-telegram"/></svg></span>
+      <div><strong>Telegram</strong><span id="tgStatusText">Проверяем настройки…</span></div>
+    </div>
+    <div class="feed" id="feedList"></div>
+  </aside>
+</div>
+
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

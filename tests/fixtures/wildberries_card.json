@@ -1,0 +1,21 @@
+{
+  "data": {
+    "products": [
+      {
+        "id": 182203524,
+        "name": "Кроссовки Drift Runner V3",
+        "brand": "Drift",
+        "totalQuantity": 42,
+        "sizes": [
+          {
+            "price": {
+              "product": 849900,
+              "total": 849900,
+              "basic": 999900
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

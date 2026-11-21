@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <defs>
+    <linearGradient id="ds-a" x1="42" y1="120" x2="196" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset="1" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="ds-b" x1="60" y1="176" x2="186" y2="196" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F3FF"/><stop offset="1" stop-color="#C9FF4D"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="120" cy="204" rx="76" ry="9" fill="#000" opacity=".35"/>
+  <path d="M40 152c16-9 33-7 48-19l22-19c8-7 17-5 26 4l36 38c12 13 9 26-9 26H58c-18 0-26-17-18-30Z" fill="url(#ds-a)"/>
+  <path d="M40 152c16-9 33-7 48-19l22-19c8-7 17-5 26 4l36 38c12 13 9 26-9 26H58c-18 0-26-17-18-30Z" stroke="#fff" stroke-opacity=".2" stroke-width="2"/>
+  <path d="M38 172h160c9 0 15 5 14 12-1 8-8 12-17 12H56c-14 0-23-6-24-14-1-6 2-10 6-10Z" fill="url(#ds-b)"/>
+  <path d="M54 180h132" stroke="#0B0D14" stroke-opacity=".28" stroke-width="3" stroke-linecap="round"/>
+  <path d="M84 132l16-14M98 140l16-14M112 148l16-14" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+  <path d="M136 130c8 6 14 12 20 20" stroke="#C9FF4D" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="164" cy="162" r="4" fill="#C9FF4D"/>
+</svg>
