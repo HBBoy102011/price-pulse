@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PricePulse — трекер цен на FastAPI</title>
+    <meta
+      name="description"
+      content="Учебный сервис на FastAPI: парсеры магазинов, история цен, Chart.js-дашборд, PostgreSQL и Telegram-бот с командами."
+    />
+    <meta property="og:title" content="PricePulse — трекер цен на FastAPI" />
+    <meta
+      property="og:description"
+      content="Парсеры, история цен, дашборд и Telegram-бот. Docker, PostgreSQL, Alembic, 45 тестов."
+    />
+    <meta
+      property="og:image"
+      content="https://raw.githubusercontent.com/HBBoy102011/price-pulse/main/docs/screenshots/dashboard.png"
+    />
+    <meta name="theme-color" content="#0b0d10" />
+    <link rel="icon" href="screenshots/dashboard.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b0d10;
+        --panel: #12161b;
+        --line: #242b33;
+        --text: #e8ecef;
+        --muted: #9aa4af;
+        --accent: #c9ff4d;
+        --accent-ink: #10140a;
+        --radius: 18px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(900px 500px at 15% -10%, rgba(201, 255, 77, 0.12), transparent 60%),
+          radial-gradient(700px 400px at 95% 0%, rgba(76, 201, 240, 0.08), transparent 55%),
+          var(--bg);
+        color: var(--text);
+        font-family: Manrope, system-ui, sans-serif;
+        line-height: 1.6;
+      }
+      a { color: inherit; }
+      .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+      header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 26px 0; border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        display: flex; align-items: center; gap: 10px;
+        font-family: Unbounded, Manrope, sans-serif; font-size: 18px; letter-spacing: -0.02em;
+      }
+      .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 18px var(--accent); }
+      nav { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+      nav a { text-decoration: none; }
+      nav a:hover { color: var(--text); }
+      .hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; padding: 76px 0 56px; }
+      .kicker { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+      h1 {
+        font-family: Unbounded, Manrope, sans-serif; font-size: clamp(38px, 5.4vw, 66px);
+        line-height: 1.04; letter-spacing: -0.045em; margin: 18px 0 22px;
+      }
+      .lead { color: var(--muted); font-size: 18px; max-width: 54ch; margin: 0 0 30px; }
+      .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 10px; padding: 13px 20px;
+        border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 14px;
+        border: 1px solid var(--line); color: var(--text); background: rgba(255,255,255,0.03);
+      }
+      .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+      .btn:hover { transform: translateY(-1px); }
+      .shot { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+      .shot img { display: block; width: 100%; height: auto; }
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 12px 0 0; }
+      .stat { border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: rgba(255,255,255,0.02); }
+      .stat b { display: block; font-size: 22px; font-family: Unbounded, Manrope, sans-serif; letter-spacing: -0.03em; }
+      .stat span { color: var(--muted); font-size: 12px; }
+      section { padding: 56px 0; border-top: 1px solid var(--line); }
+      h2 { font-family: Unbounded, Manrope, sans-serif; font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -0.03em; margin: 0 0 12px; }
+      .section-lead { color: var(--muted); max-width: 70ch; margin: 0 0 28px; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      .card { border: 1px solid var(--line); border-radius: 16px; padding: 22px; background: var(--panel); }
+      .card h3 { margin: 0 0 8px; font-size: 16px; }
+      .card p { margin: 0; color: var(--muted); font-size: 14px; }
+      .num { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: 0.12em; }
+      .commands { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .cmd { display: flex; gap: 14px; align-items: baseline; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--panel); }
+      .cmd code { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; white-space: nowrap; }
+      .cmd span { color: var(--muted); font-size: 13px; }
+      pre {
+        margin: 0; padding: 18px; border-radius: 14px; border: 1px solid var(--line);
+        background: #080a0c; overflow-x: auto; font-size: 13px; line-height: 1.65;
+      }
+      code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+      footer { padding: 34px 0 50px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+      footer a { color: var(--text); text-decoration: none; }
+      @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; padding-top: 52px; }
+        .grid { grid-template-columns: 1fr 1fr; }
+        .stats { grid-template-columns: 1fr 1fr; }
+        nav { display: none; }
+      }
+      @media (max-width: 620px) {
+        .grid, .commands { grid-template-columns: 1fr; }
+        .stats { grid-template-columns: 1fr 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand"><span class="dot"></span> PricePulse</div>
+        <nav>
+          <a href="#features">Возможности</a>
+          <a href="#bot">Telegram-бот</a>
+          <a href="#stack">Стек</a>
+          <a href="https://github.com/HBBoy102011/price-pulse">GitHub</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero" style="border: 0">
+          <div>
+            <div class="kicker">FastAPI · PostgreSQL · Telegram</div>
+            <h1>Цены меняются.<br />Вы — нет.</h1>
+            <p class="lead">
+              PricePulse следит за товарами в магазинах, хранит историю цен и пишет
+              в Telegram, когда цена опускается до цели или становится реально выгодной.
+            </p>
+            <div class="cta">
+              <a class="btn primary" href="https://github.com/HBBoy102011/price-pulse">Смотреть код →</a>
+              <a class="btn" href="https://render.com/deploy?repo=https://github.com/HBBoy102011/price-pulse">Deploy to Render</a>
+            </div>
+          </div>
+          <div class="shot">
+            <img src="screenshots/dashboard.png" alt="Дашборд PricePulse" />
+          </div>
+        </section>
+
+        <div class="stats">
+          <div class="stat"><b>3</b><span>парсера магазинов</span></div>
+          <div class="stat"><b>45</b><span>тестов, SQLite + PostgreSQL</span></div>
+          <div class="stat"><b>11</b><span>команд Telegram-бота</span></div>
+          <div class="stat"><b>MIT</b><span>открытый исходный код</span></div>
+        </div>
+
+        <section id="features">
+          <h2>Что умеет</h2>
+          <p class="section-lead">
+            Не «скелет на один эндпоинт», а законченный сервис: парсинг, планировщик,
+            история, алерты, бот и дашборд.
+          </p>
+          <div class="grid">
+            <div class="card"><div class="num">01</div><h3>Парсеры</h3><p>Demo Store, Wildberries JSON API и Ozon JSON-LD за общим интерфейсом. robots.txt, таймауты и честный User-Agent.</p></div>
+            <div class="card"><div class="num">02</div><h3>История и статистика</h3><p>Минимум, максимум, средняя, медиана за 30 дней, изменение за сутки и экономия от исторического пика.</p></div>
+            <div class="card"><div class="num">03</div><h3>Умные алерты</h3><p>Цель, скидка к медиане, резкое падение и ошибки парсера. Кулдауны, чтобы не спамить.</p></div>
+            <div class="card"><div class="num">04</div><h3>Telegram-бот</h3><p>Добавление, проверка, статистика, пауза, цель, CSV и удаление — прямо в чате.</p></div>
+            <div class="card"><div class="num">05</div><h3>Дашборд</h3><p>Тёмная и светлая темы, Chart.js, sparkline, поиск, фильтры и модальные окна без сборщика.</p></div>
+            <div class="card"><div class="num">06</div><h3>Инфраструктура</h3><p>Docker, PostgreSQL 16, Alembic, GHCR, CI на трёх версиях Python и Render Blueprint.</p></div>
+          </div>
+        </section>
+
+        <section id="bot">
+          <h2>Бот, которым пользуются</h2>
+          <p class="section-lead">
+            `/start` привязывает chat_id автоматически. Каждый пользователь видит только
+            свои товары, а доступ можно закрыть whitelist-ом.
+          </p>
+          <div class="commands">
+            <div class="cmd"><code>/start</code><span>привязка аккаунта и chat_id</span></div>
+            <div class="cmd"><code>/list</code><span>товары, цены и цели</span></div>
+            <div class="cmd"><code>/add &lt;url&gt; [цель]</code><span>добавить товар</span></div>
+            <div class="cmd"><code>/check [id|all]</code><span>проверить цены</span></div>
+            <div class="cmd"><code>/stats &lt;id&gt;</code><span>медиана и скидка</span></div>
+            <div class="cmd"><code>/target &lt;id&gt; &lt;цена&gt;</code><span>изменить цель</span></div>
+            <div class="cmd"><code>/pause &lt;id&gt;</code><span>поставить на паузу</span></div>
+            <div class="cmd"><code>/export &lt;id&gt;</code><span>CSV с историей</span></div>
+          </div>
+        </section>
+
+        <section id="stack">
+          <h2>Стек</h2>
+          <div class="grid">
+            <div class="card"><h3>Backend</h3><p>Python 3.11+, FastAPI, Pydantic 2, SQLAlchemy 2, Alembic, APScheduler.</p></div>
+            <div class="card"><h3>Данные</h3><p>SQLite локально, PostgreSQL 16 в Docker и на PaaS. История цен и каскады.</p></div>
+            <div class="card"><h3>Frontend</h3><p>Ванильный JS, Chart.js, Manrope и Unbounded. Без сборщика и CDN.</p></div>
+          </div>
+          <pre style="margin-top: 16px"><code>git clone https://github.com/HBBoy102011/price-pulse.git
+cd price-pulse
+pip install -r requirements-dev.txt
+python -m scripts.seed_demo
+uvicorn app.main:app --reload</code></pre>
+        </section>
+      </main>
+
+      <footer>
+        <span>© 2026 HBBoy102011 · MIT · учебный проект</span>
+        <span>
+          <a href="https://github.com/HBBoy102011/price-pulse">GitHub</a> ·
+          <a href="https://github.com/HBBoy102011/price-pulse/releases/tag/v1.0.0">Release v1.0.0</a> ·
+          <a href="https://github.com/HBBoy102011/price-pulse/blob/main/CONTRIBUTING.md">Contributing</a>
+        </span>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import csv
-import io
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -23,6 +21,7 @@ from app.schemas import (
     ProductCreate,
     ProductUpdate,
 )
+from app.services.export import build_history_csv
 from app.services.price_service import (
     DuplicateProductError,
     check_product,
@@ -201,22 +200,9 @@ def product_stats(product_id: int, db: DbSession) -> PriceStats:
 def export_history(product_id: int, db: DbSession, days: int = Query(365, ge=1, le=3650)):
     product = _get_product(db, product_id)
     rows = get_history(db, product.id, days=days)
-    buffer = io.StringIO()
-    writer = csv.writer(buffer, delimiter=";")
-    writer.writerow(["checked_at", "price", "currency", "in_stock"])
-    for row in rows:
-        writer.writerow(
-            [
-                as_utc(row.checked_at).isoformat() if row.checked_at else "",
-                f"{float(row.price):.2f}",
-                row.currency,
-                "true" if row.in_stock else "false",
-            ]
-        )
-    content = "\ufeff" + buffer.getvalue()
-    filename = f"pricepulse-product-{product.id}-history.csv"
+    filename, content = build_history_csv(product, rows)
     return Response(
-        content=content.encode("utf-8"),
+        content=content,
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

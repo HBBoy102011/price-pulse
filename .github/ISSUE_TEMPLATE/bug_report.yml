@@ -1,0 +1,106 @@
+name: 🐛 Bug report
+description: Что-то сломалось или ведёт себя не так, как ожидалось
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за отчёт! Пожалуйста, не прикладывайте токены, пароли и персональные данные.
+        Для уязвимостей используйте [SECURITY.md](../blob/main/SECURITY.md), а не публичный issue.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Что произошло
+      description: Краткое описание проблемы.
+      placeholder: "Например: после нажатия «Проверить» товар получает статус error"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения
+      description: Чем подробнее, тем быстрее получится починить.
+      placeholder: |
+        1. Открыть ...
+        2. Нажать ...
+        3. Увидеть ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемое поведение
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Фактическое поведение
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Область
+      options:
+        - Парсеры и проверка цен
+        - Дашборд и UI
+        - Telegram-бот и уведомления
+        - REST API
+        - Docker и деплой
+        - База данных и миграции
+        - Другое
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Версия / коммит
+      placeholder: "v1.0.0 или sha"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Окружение
+      options:
+        - Локально (venv)
+        - Docker Compose
+        - Другой хостинг
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: ОС и Python
+      placeholder: "Windows 11, Python 3.12.4"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи / трейсбек
+      description: Уберите токены и персональные данные.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Проверки
+      options:
+        - label: Я поискал похожие issues и не нашёл дубликат
+          required: true
+        - label: Я убрал секреты из логов и описания
+          required: true

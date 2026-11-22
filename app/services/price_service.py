@@ -44,15 +44,50 @@ def _money(value: float | Decimal | None) -> Decimal | None:
 
 
 def get_or_create_default_user(db: Session) -> User:
-    user = db.scalar(select(User).order_by(User.id).limit(1))
+    """Return the web/demo user, never a Telegram account created by the bot."""
+    if settings.default_user_telegram_id:
+        user = db.scalar(select(User).where(User.telegram_id == settings.default_user_telegram_id))
+        if user is not None:
+            return user
+    else:
+        user = db.scalar(select(User).where(User.telegram_id.is_(None)).order_by(User.id).limit(1))
+        if user is not None:
+            return user
+
+    user = User(
+        display_name="PricePulse demo",
+        telegram_id=settings.default_user_telegram_id,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def get_or_create_telegram_user(
+    db: Session, telegram_id: int, display_name: str | None = None
+) -> User:
+    """Map a Telegram account to a local user, creating it on first contact."""
+    user = db.scalar(select(User).where(User.telegram_id == telegram_id))
     if user is None:
         user = User(
-            display_name="PricePulse demo",
-            telegram_id=settings.default_user_telegram_id,
+            telegram_id=telegram_id,
+            display_name=(display_name or "Telegram user")[:120],
         )
         db.add(user)
+        try:
+            db.commit()
+        except IntegrityError:
+            # Two updates from the same new user can race; keep the first row.
+            db.rollback()
+            user = db.scalar(select(User).where(User.telegram_id == telegram_id))
+            if user is None:  # pragma: no cover - defensive
+                raise
+        else:
+            db.refresh(user)
+    elif display_name and user.display_name != display_name:
+        user.display_name = display_name[:120]
         db.commit()
-        db.refresh(user)
     return user
 
 
@@ -78,9 +113,11 @@ def _recent_notification(db: Session, product_id: int, kind: str, hours: int) ->
     return row is not None
 
 
-async def create_product(db: Session, payload: ProductCreate) -> Product:
+async def create_product(
+    db: Session, payload: ProductCreate, *, user: User | None = None
+) -> Product:
     """Parse the URL and start tracking it. Raises ParserError on bad pages."""
-    user = get_or_create_default_user(db)
+    user = user or get_or_create_default_user(db)
     duplicate = db.scalar(
         select(Product).where(Product.user_id == user.id, Product.url == payload.url)
     )

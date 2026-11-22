@@ -5,15 +5,26 @@
 Учебный backend-проект для портфолио: парсинг сайтов, планировщик, проектирование БД с историей изменений, REST API, аккуратный веб-интерфейс и интеграция с внешним API.
 
 [![CI](https://github.com/HBBoy102011/price-pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/HBBoy102011/price-pulse/actions/workflows/ci.yml)
+[![Docker](https://github.com/HBBoy102011/price-pulse/actions/workflows/docker.yml/badge.svg)](https://github.com/HBBoy102011/price-pulse/actions/workflows/docker.yml)
+[![GHCR](https://img.shields.io/badge/GHCR-ghcr.io%2Fhbboy102011%2Fprice--pulse-2496ED?logo=docker&logoColor=white)](https://github.com/HBBoy102011/price-pulse/pkgs/container/price-pulse)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.165-009688?logo=fastapi&logoColor=white)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.1-D71F00?logo=sqlalchemy&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-32%20passed-c9ff4d)
+![Tests](https://img.shields.io/badge/tests-45%20passed-c9ff4d)
 ![License](https://img.shields.io/badge/license-MIT-c9ff4d)
 
 <p align="center">
   <img src="docs/screenshots/dashboard.png" alt="PricePulse — дашборд" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/HBBoy102011/price-pulse/releases/tag/v1.0.0"><b>Release v1.0.0</b></a>
+  ·
+  <a href="https://hbboy102011.github.io/price-pulse/">Landing page</a>
+  ·
+  <a href="https://github.com/HBBoy102011/price-pulse/pkgs/container/price-pulse">Docker image</a>
+  ·
+  <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 ---
@@ -28,8 +39,9 @@ PricePulse следит за товарами в интернет-магазин
 - APScheduler с периодическими проверками и защитой от параллельных запусков;
 - история цен и статистика (минимум, максимум, средняя, медиана за 30 дней, изменение за сутки);
 - алерты по порогу цены, скидке к медиане и резкому падению;
+- Telegram-бот с командами, привязкой chat_id через `/start` и ограничением доступа;
 - SQLite локально и PostgreSQL в Docker без изменения кода;
-- Alembic-миграции, 32 теста, ruff + black, GitHub Actions;
+- Alembic-миграции, 45 тестов, ruff + black, GitHub Actions и PostgreSQL в CI;
 - собственный дашборд без сборщика: тёмная/светлая тема, графики Chart.js, поиск, фильтры, модальные окна и CSV-экспорт.
 
 ### Почему это интересно смотреть
@@ -41,6 +53,7 @@ PricePulse следит за товарами в интернет-магазин
 | Планировщик и фоновые задачи | `app/scheduler.py` |
 | БД с историей и каскадами | `app/models/models.py` |
 | REST API и валидация | `app/api/`, `app/schemas.py` |
+| Telegram-бот и long polling | `app/bot/` |
 | Визуализация и UX | `web/` |
 | Тесты, миграции, Docker, CI | `tests/`, `migrations/`, `Dockerfile`, `.github/` |
 
@@ -66,6 +79,32 @@ PricePulse следит за товарами в интернет-магазин
 - ⚠️ **Ошибка парсера** — товар не проверяется после 3 неудач подряд.
 - Все события сохраняются в ленту. Если Telegram не настроен, они получают статус `skipped` — демо-режим виден прямо в интерфейсе.
 - Кулдауны: цель и падение — раз в 24 часа, скидка — раз в 7 дней, ошибка — раз в 24 часа.
+
+### Telegram-бот
+
+Бот — не только отправщик алертов. Им можно пользоваться как полноценным клиентом:
+
+| Команда | Что делает |
+|---|---|
+| `/start` | Приветствие, привязка Telegram-аккаунта и chat_id |
+| `/help` | Список команд |
+| `/list` | Товары пользователя с ценами, целями и статусом |
+| `/add <ссылка> [цель] [скидка %]` | Добавить товар; ссылку можно отправить и без команды |
+| `/check [id\|all]` | Проверить один товар или все |
+| `/stats <id>` | Минимум, максимум, средняя, медиана, скидка и изменение за 24 часа |
+| `/target <id> <цена\|off>` | Изменить или снять цель |
+| `/pause <id>` / `/resume <id>` | Пауза и возобновление |
+| `/export <id>` | CSV с историей прямо в чат |
+| `/delete <id>` | Удаление с подтверждением |
+| `/id` | Показать Telegram ID и chat ID |
+
+Что важно:
+
+- `/start` создаёт локального пользователя и запоминает `telegram_id` — отдельно вводить chat_id не нужно.
+- Каждый пользователь видит только свои товары; уведомления уходят в его чат.
+- Доступ можно закрыть списком `TELEGRAM_ALLOWED_USER_IDS`.
+- Long polling работает и отдельным процессом (`python -m app.bot`), и фоновой задачей приложения (`TELEGRAM_BOT_POLLING=true`).
+- Все команды покрыты тестами через фейковый Telegram API, поэтому для проверки логики токен не нужен.
 
 ### Дашборд
 
@@ -142,10 +181,11 @@ PricePulse следит за товарами в интернет-магазин
 | Парсинг | httpx + BeautifulSoup4 | HTML и JSON API |
 | Планировщик | APScheduler | Периодические проверки |
 | Графики | Chart.js 4 | Без сборщика и CDN |
-| Уведомления | Telegram Bot API | Внешняя интеграция |
-| Тесты | pytest | 32 теста |
-| Качество | ruff + black | Линт и форматирование |
-| Деплой | Docker, docker-compose | Локально и на VPS |
+| Уведомления | Telegram Bot API | Алерты и команды |
+| Бот | httpx + long polling | Без тяжёлого фреймворка |
+| Тесты | pytest + pytest-cov | 45 тестов, SQLite и PostgreSQL |
+| Качество | ruff + black + alembic check | Линт, формат, миграции |
+| Деплой | Docker, GHCR, Render | Локально, VPS и PaaS |
 
 ---
 
@@ -163,6 +203,8 @@ flowchart LR
     S --> DB[(SQLite / PostgreSQL)]
     S --> N[Notifier]
     N --> TG[Telegram Bot API]
+    B[Telegram-бот] -->|команды| API
+    TG -->|long polling| B
     SCH[APScheduler] -->|каждые 6 часов| S
     R[robots.txt] -->|проверка| P
 ```
@@ -189,7 +231,7 @@ erDiagram
 
     USERS {
         int id PK
-        int telegram_id UK
+        bigint telegram_id UK
         string display_name
         datetime created_at
     }
@@ -319,24 +361,82 @@ docker compose exec app python -m scripts.seed_demo
 docker compose down -v
 ```
 
+### Готовый образ из GHCR
+
+Каждый push в `main` и каждый тег `v*` собирает multi-arch образ
+(`linux/amd64`, `linux/arm64`):
+
+```bash
+docker pull ghcr.io/hbboy102011/price-pulse:latest
+docker run --rm -p 8000:8000 \
+  -e DATABASE_URL=sqlite:////data/pricepulse.db \
+  -v pricepulse-data:/data \
+  ghcr.io/hbboy102011/price-pulse:latest
+```
+
+Для PostgreSQL передайте `DATABASE_URL` и `AUTO_CREATE_TABLES=false`.
+
+---
+
+## Демо и деплой
+
+- **Landing page:** <https://hbboy102011.github.io/price-pulse/>
+- **One-click Render Blueprint:** [render.yaml](render.yaml) + PostgreSQL 16.
+  Кнопка ниже создаёт web-сервис и базу, останется указать токен бота:
+
+  [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/HBBoy102011/price-pulse)
+
+- **GHCR:** `docker pull ghcr.io/hbboy102011/price-pulse:latest`
+- **Release:** <https://github.com/HBBoy102011/price-pulse/releases/tag/v1.0.0>
+
+После деплоя на Render:
+
+1. Откройте сервис и добавьте `TELEGRAM_BOT_TOKEN`.
+2. Укажите свой ID в `TELEGRAM_ALLOWED_USER_IDS` (бот покажет его по `/id`).
+3. `TELEGRAM_BOT_POLLING=true` уже включён в blueprint.
+4. Демо-данные: `python -m scripts.seed_demo` через Render Shell.
+
 ---
 
 ## Telegram
 
 1. Создайте бота у [@BotFather](https://t.me/BotFather): `/newbot` → получите токен.
-2. Узнайте `chat_id`: напишите боту сообщение и откройте
-   `https://api.telegram.org/bot<TOKEN>/getUpdates`, либо используйте [@userinfobot](https://t.me/userinfobot).
-3. Заполните `.env`:
+2. Заполните `.env`:
 
 ```env
 TELEGRAM_BOT_TOKEN=123456:AA...
-TELEGRAM_CHAT_ID=123456789
+TELEGRAM_BOT_POLLING=true
 TELEGRAM_ENABLED=true
+
+# Необязательно: фиксированный чат для алертов и whitelist бота.
+TELEGRAM_CHAT_ID=
+TELEGRAM_ALLOWED_USER_IDS=
 ```
 
-4. Перезапустите приложение.
+3. Перезапустите приложение и отправьте боту `/start`.
+   Он создаст локального пользователя, запомнит `telegram_id` и покажет команды.
+4. Добавьте товар: `/add https://www.wildberries.ru/catalog/... 15000 10`.
+5. Проверьте: `/check all`; статистика: `/stats 1`; CSV: `/export 1`.
 
-Без токена сервис работает в **демо-режиме**: уведомления создаются, сохраняются в ленте и помечаются как `skipped`. Это позволяет показывать весь сценарий без внешних секретов.
+`chat_id` вручную вводить не нужно: `/start` привязывает его автоматически.
+Если `TELEGRAM_ALLOWED_USER_IDS` пуст, бот открыт всем — для публичного демо
+лучше указать свой ID (его показывает `/id`).
+
+### Отдельный процесс бота
+
+Если не хотите держать polling внутри веб-процесса:
+
+```bash
+python -m app.bot
+```
+
+В Docker включите `TELEGRAM_BOT_POLLING=true` и перезапустите контейнер.
+Polling должен работать ровно на одном инстансе, иначе Telegram разделит
+обновления между ними.
+
+Без токена сервис работает в **демо-режиме**: уведомления создаются, сохраняются
+в ленте и помечаются как `skipped`. Это позволяет показывать весь сценарий без
+внешних секретов.
 
 ---
 
@@ -446,6 +546,7 @@ black --check .
 - уведомления о цели, скидке, падении и ошибке;
 - порог из 3 ошибок и сброс счётчика при успехе;
 - rate-limit: повторная проверка слишком рано возвращает `skipped`;
+- команды Telegram-бота, callback-кнопки и ограничение доступа;
 - health-check и сводка дашборда.
 
 С покрытием:
@@ -454,7 +555,9 @@ black --check .
 pytest --cov=app --cov-report=term-missing
 ```
 
-CI прогоняет линтер, форматтер и тесты на Python 3.11, 3.12 и 3.13.
+CI прогоняет линтер, форматтер и тесты на Python 3.11, 3.12 и 3.13,
+отдельный job — на PostgreSQL 16, ещё один проверяет `alembic upgrade head`
+и `alembic check`.
 
 ---
 
@@ -464,9 +567,10 @@ CI прогоняет линтер, форматтер и тесты на Python
 price-pulse/
 ├── app/
 │   ├── api/                 # products, checks, dashboard, demo
+│   ├── bot/                 # Telegram API, команды, long polling
 │   ├── models/              # SQLAlchemy-модели
 │   ├── parsers/             # base, demo, wildberries, ozon, registry
-│   ├── services/            # price_service, notifier, robots, stats
+│   ├── services/            # price_service, notifier, robots, stats, export
 │   ├── config.py            # настройки из .env
 │   ├── database.py          # engine, session, init_db
 │   ├── demo_catalog.py      # каталог Demo Store
@@ -480,11 +584,15 @@ price-pulse/
 │   └── capture_screenshots.py
 ├── tests/                   # pytest + фикстуры
 ├── web/                     # дашборд: HTML, CSS, JS, шрифты, Chart.js
-├── docs/screenshots/        # скриншоты для README
+├── docs/                    # landing page и скриншоты
 ├── Dockerfile
 ├── docker-compose.yml
+├── render.yaml              # one-click деплой на Render
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── SECURITY.md
 ├── pyproject.toml
-└── .github/workflows/ci.yml
+└── .github/                 # CI, Docker, шаблоны issue/PR
 ```
 
 ---
@@ -494,13 +602,37 @@ price-pulse/
 - [x] MVP: добавление по ссылке, 3 парсера, история, график, Telegram
 - [x] Скидка к медиане и обнаружение резких падений
 - [x] CSV-экспорт, пауза, ручная проверка
-- [x] Alembic, Docker, CI, 32 теста
+- [x] Alembic, Docker, GHCR, CI на SQLite и PostgreSQL, 45 тестов
+- [x] Telegram-бот с командами и привязкой chat_id через `/start`
+- [x] Релиз v1.0.0, CHANGELOG, шаблоны issue/PR, SECURITY
 - [ ] Playwright для сайтов, которые рендерят цену на клиенте
 - [ ] Сравнение одного товара в нескольких магазинах
-- [ ] Пользовательские аккаунты и авторизация
+- [ ] JWT-авторизация и мультипользовательность в веб-интерфейсе
+- [ ] Email, Web Push и Discord/Slack-вебхуки
 - [ ] Celery + Redis для горизонтального масштабирования
-- [ ] Web Push и email-дубли уведомлений
-- [ ] Деплой на Render / Railway / VPS
+- [ ] Постоянный демо-стенд на Render / Fly.io / VPS
+
+---
+
+## Contributing
+
+Хотите добавить магазин, команду бота или улучшить UI?
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — окружение, стиль, тесты и правила PR.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — правила общения.
+- [SECURITY.md](SECURITY.md) — как сообщить об уязвимости.
+- [CHANGELOG.md](CHANGELOG.md) — история версий.
+- Шаблоны [issue](https://github.com/HBBoy102011/price-pulse/issues/new/choose)
+  и [Pull Request](.github/PULL_REQUEST_TEMPLATE.md) уже настроены.
+
+Перед PR:
+
+```bash
+pytest -q
+ruff check .
+black --check .
+alembic check
+```
 
 ---
 

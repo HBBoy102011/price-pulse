@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     DateTime,
     ForeignKey,
@@ -35,7 +36,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    telegram_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True)
+    telegram_id: Mapped[int | None] = mapped_column(BigInteger, unique=True, nullable=True)
     display_name: Mapped[str] = mapped_column(String(120), default="Demo user")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 

@@ -10,18 +10,23 @@ import os
 import tempfile
 from pathlib import Path
 
-_TMP_DIR = Path(tempfile.mkdtemp(prefix="pricepulse-tests-"))
-os.environ["DATABASE_URL"] = f"sqlite:///{(_TMP_DIR / 'test.db').as_posix()}"
+if os.getenv("TEST_DATABASE_URL"):
+    # CI runs the same suite against PostgreSQL to catch dialect-specific bugs.
+    os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
+else:
+    _TMP_DIR = Path(tempfile.mkdtemp(prefix="pricepulse-tests-"))
+    os.environ["DATABASE_URL"] = f"sqlite:///{(_TMP_DIR / 'test.db').as_posix()}"
 os.environ["SCHEDULER_ENABLED"] = "false"
 os.environ["ROBOTS_CHECK_ENABLED"] = "false"
 os.environ["TELEGRAM_ENABLED"] = "false"
+os.environ["TELEGRAM_BOT_POLLING"] = "false"
 os.environ["AUTO_CREATE_TABLES"] = "true"
 os.environ["PUBLIC_BASE_URL"] = "http://testserver"
 
-import pytest  # noqa: E402
-from app.database import Base, SessionLocal, engine  # noqa: E402
-from app.main import app  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
+import pytest
+from app.database import Base, SessionLocal, engine
+from app.main import app
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture()

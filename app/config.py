@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,8 +49,29 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
     telegram_enabled: bool = True
+    # Long polling inside the web process (single worker) or via `python -m app.bot`.
+    telegram_bot_polling: bool = False
+    # Comma-separated Telegram user IDs allowed to use the bot. Empty = everyone.
+    telegram_allowed_user_ids: str = ""
 
     default_user_telegram_id: int | None = None
+
+    @field_validator("database_url")
+    @classmethod
+    def _normalize_database_url(cls, value: str) -> str:
+        """Accept the URLs handed out by Render/Heroku and use psycopg 3."""
+        for prefix in ("postgres://", "postgresql://"):
+            if value.startswith(prefix):
+                return "postgresql+psycopg://" + value[len(prefix) :]
+        return value
+
+    @model_validator(mode="after")
+    def _apply_platform_url(self) -> Settings:
+        """Use Render's public URL when the default localhost value is left in place."""
+        render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip()
+        if render_url and self.public_base_url.rstrip("/") == "http://localhost:8000":
+            self.public_base_url = render_url.rstrip("/")
+        return self
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -59,6 +82,15 @@ class Settings(BaseSettings):
     @property
     def telegram_configured(self) -> bool:
         return bool(self.telegram_bot_token and self.telegram_chat_id)
+
+    @property
+    def telegram_allowed_id_set(self) -> set[int]:
+        ids: set[int] = set()
+        for chunk in self.telegram_allowed_user_ids.replace(";", ",").split(","):
+            chunk = chunk.strip()
+            if chunk.lstrip("-").isdigit():
+                ids.add(int(chunk))
+        return ids
 
 
 @lru_cache
