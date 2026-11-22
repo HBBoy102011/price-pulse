@@ -18,7 +18,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/HBBoy102011/price-pulse/releases/tag/v1.0.0"><b>Release v1.0.0</b></a>
+  <a href="https://indie-top-consoles-resource.trycloudflare.com"><b>Живое демо</b></a>
+  ·
+  <a href="https://github.com/HBBoy102011/price-pulse/releases/tag/v1.0.0">Release v1.0.0</a>
   ·
   <a href="https://hbboy102011.github.io/price-pulse/">Landing page</a>
   ·
@@ -380,6 +382,9 @@ docker run --rm -p 8000:8000 \
 
 ## Демо и деплой
 
+- **Живое демо (временное):** <https://indie-top-consoles-resource.trycloudflare.com>
+  — Cloudflare quick tunnel к локальному Docker-стеку. Ссылка работает, пока
+  запущен туннель; для постоянной ссылки используйте Render Blueprint ниже.
 - **Landing page:** <https://hbboy102011.github.io/price-pulse/>
 - **One-click Render Blueprint:** [render.yaml](render.yaml) + PostgreSQL 16.
   Кнопка ниже создаёт web-сервис и базу, останется указать токен бота:
