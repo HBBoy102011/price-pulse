@@ -25,7 +25,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://pricepulse:pricepulse@db:5432/pricepulse
       AUTO_CREATE_TABLES: "false"
-      PUBLIC_BASE_URL: http://localhost:8000
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8000}
       SCHEDULER_ENABLED: "true"
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
